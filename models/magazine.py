@@ -1,4 +1,5 @@
 from connection2 import CONN, CURSOR
+from author import Author 
 
 class Magazine:
     def __init__(self, name, category, id=None):
@@ -47,11 +48,31 @@ class Magazine:
         CURSOR.execute(sql, (self.name, self.category))
         CONN.commit()
         self.id = CURSOR.lastrowid
+    
+    def articles(self):
+        if not self.id:
+            raise ValueError("ID must be set before fetching articles")
+        sql = "SELECT * FROM articles WHERE magazine_id = ?"
+        CURSOR.execute(sql, (self.id,))
+        articles = CURSOR.fetchall()
+        return articles
+
+    def contributors(self):
+        if not self.id:
+            raise ValueError("ID must be set before fetching contributors")
+        sql = "SELECT DISTINCT authors.* FROM authors JOIN articles ON authors.id = articles.author_id WHERE articles.magazine_id = ?"
+        CURSOR.execute(sql, (self.id,))
+        contributors = CURSOR.fetchall()
+        return [Author(*contributor) for contributor in contributors]
 
     def __repr__(self):
         return f'<Magazine {self.name}>'
 
-Magazine1 = Magazine('name', 'category')
-Magazine1.name = ""
-Magazine1.category = "angle"
-Magazine1.save()
+
+Magazine2 = Magazine('name', 'category')
+Magazine2.name = 'laptop'
+Magazine2.category = 'tech'
+Magazine2.save()
+
+contributors = Magazine2.contributors()
+print (contributors)

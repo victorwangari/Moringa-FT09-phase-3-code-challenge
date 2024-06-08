@@ -59,6 +59,7 @@ class Article:
             raise TypeError("Magazine ID must be an integer")
         self._magazine_id = value
 
+
     def save(self):
         if not self.title or not self.content:
             raise Exception("Title and content are required")
@@ -66,14 +67,42 @@ class Article:
                        (self.title, self.content, self.author_id, self.magazine_id))
         CONN.commit()
         self._id = CURSOR.lastrowid
+    
+    def get_author(self):
+        if self._author_id is None:
+            return None
+        CURSOR.execute("SELECT authors.id, authors.name FROM authors JOIN articles ON articles.author_id = authors.id WHERE articles.id = ?", (self._id,))
+        row = CURSOR.fetchone()
+
+        if row:
+            return {'id': row[0], 'name': row[1]}
+        return None
+    
+    def get_magazine(self):
+        if self._magazine_id is None:
+            return None
+        CURSOR.execute("SELECT magazines.id, magazines.name FROM magazines JOIN articles ON articles.magazine_id = magazines.id WHERE articles.id = ? " , (self._id,))
+        row = CURSOR.fetchone()
+
+        if row:
+            return {'id': row[0], 'name': row[1]}
+        return None
+                       
+    
 
     def __repr__(self):
         return f'<Article {self.title}>'
 # EXAMPLE USAGE 
 article = Article()
-article.title = 'WAY MAKER'
-article.content = 'This is the content'
-article.author_id = 4
-article.magazine_id = 2
+article.title = 'coding techniques'
+article.content = 'Always debug your code '
+article.author_id = 41
+article.magazine_id = 18
 article.save()
-print(article)  
+
+author = article.get_author()
+magazine = article.get_magazine()
+print(author)
+print(magazine)
+
+ 
